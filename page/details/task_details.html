@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">项目详情</h1>
+		</header>
+		
+		<table id="first" style="font-size: 14px;line-height: 30px; margin-top: 50px; margin-left: 10px;">
+			<tr><td style="width: 160px">项目名称：</td><td>海洋生态保护修复工程</td></tr>
+			<tr><td>填报截止日期：</td><td>2020-06-30</td></tr>
+			<tr><td>累计执行资金（万元）：</td><td></td></tr>
+			<tr><td>累计报备资金（万元）：</td><td>10000</td></tr><tr>
+			<td>资金类型：</td><td>海洋生态保护修复工程</td></tr>
+			<tr><td>资金子类型：</td><td>蓝色海湾整治行动</td></tr>
+			<tr><td>规划周期：</td><td>3 </td></tr>
+			<tr><td>规划开始时间：</td><td></td></tr>
+			<tr><td>联系人：</td><td>玄武</td</tr>
+			<tr><td>联系电话：</td><td>111</td></tr>
+			<tr><td>项目简述：</td><td>海洋生态保护修复工程</td></tr>
+			<tr><td>执行备注：</td><td></td></tr>
+		</table>
+		<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">
+		<table id="second" style="font-size: 14px;line-height: 30px; margin-top: 50px; margin-left: 10px;">
+			
+		</table>
+		<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">
+		<table id="third" style="font-size: 14px;line-height: 30px; margin-top: 50px; margin-left: 10px;">
+			
+		</table>
+		<div id="h1"></div>
+		<table id="forth" style="font-size: 14px;line-height: 30px; margin-top: 50px; margin-left: 10px;">
+			
+		</table>
+		<div id="h2"></div>
+		<table id="fifth" style="font-size: 14px;line-height: 30px; margin-top: 50px; margin-left: 10px;">
+			
+		</table>
+		<script src="../../mui/js/mui.min.js"></script>
+		<script src="../../mui/js/mui.js"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function(){
+				//接收上个页面传输过来的信息。
+				var curView = plus.webview.currentWebview();
+				var page = curView.page;	//项目页面判断，5为报备审核，6为执行项目
+				//获取样式
+				var hr = '<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">';
+				var h1 = document.getElementById('h1');
+				var h2 = document.getElementById('h2');
+				var Essential = document.getElementById('first'); //基本信息
+				var fundBlockTable = document.getElementById('second');//资金块信息
+				var Performance = document.getElementById('third');//绩效信息
+				var fill = document.getElementById('forth');	//附件信息
+				
+				if(page == 5){
+					var taskId = curView.taskId;
+					var fundAssignId = curView.fundAssignId;
+					var taskName = curView.taskName;
+					var fundPlan = curView.fundPlan;
+					var taskCycle = curView.taskCycle;
+					var taskLinkMan = curView.taskLinkMan;
+					var taskLinkPhone = curView.taskLinkPhone;
+					var memo = curView.memo;
+					var ess = '<tr><td style="width: 160px">项目名称：</td><td>'+taskName+'</td></tr>'
+						+'<tr><td>联系人：</td><td>'+taskLinkMan+'</td</tr>'
+						+'<tr><td>联系电话：</td><td>'+taskLinkPhone+'</td></tr>'
+						+'<tr><td>任务描述：</td><td>'+memo+'</td></tr>'
+						+'<tr><td>任务周期（月）：</td><td>'+taskCycle+'</td></tr>'
+						+'<tr><td>投入资金（万元）：</td><td>'+fundPlan+'</td></tr>';
+					Essential.innerHTML = ess;
+					//资金块信息
+					mui.ajax(ajaxUrl+'/rest/fund/ProjectWriteController/getDetailType', {
+						data: {
+							page: 1,
+							limit: 10,
+							taskId: taskId,
+							fundAssignId: fundAssignId
+						},
+						type: 'get',
+						dataType: 'json',
+						success:function(data){
+							if (data.status) {
+								var ftr = '<tr style="font-size: 20px;"><td>资金信息</td></tr>'
+								+'<tr><th style="width: 150px;">资金来源组织名称</th><th>资金属性</th><th style="width: 120px;">资金数额（万元）</th></tr>';
+								mui.each(data.data.list, function(i, item){
+									ftr +='<tr><td>'+item.fundOrganName+'</td><td>'
+										+getfundType(item.fundProperty)+'</td><td>'
+										+item.fundAmount+'</td></tr>';
+								})
+								fundBlockTable.innerHTML = ftr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","资金块信息");
+						}
+					});
+					//绩效信息
+					mui.ajax(ajaxUrl+'/rest/fund/fundReportController/selTaskPerformance', {
+						data: {
+							page: 1,
+							limit: 10,
+							taskId: taskId
+						},
+						type: 'get',
+						dataType: 'json',
+						contentType: "application/json; charset=utf-8",
+						success:function(data){
+							if (data.status) {
+								var ptr = '<tr style="font-size: 20px;"><td>绩效信息</td></tr>'
+									+'<tr><th>绩效指标名称</th><th style="width:100px;">指标目标值</th>'
+									+'<th style="width:70px;">指标单位</th></tr>';
+								mui.each(data.data.list, function(i, item){
+									ptr +='<tr><td>'+item.performanceIndicatorName+'</td><td>'
+										+item.ministryPerformanceValue+'</td><td>'
+										+item.unitName+'</td></tr>';
+								})
+								Performance.innerHTML=ptr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","绩效信息");
+						}
+					});
+					//附件清单
+					mui.ajax(ajaxUrl+'/rest/fund/fundFileController/getFileList', {
+						data: {
+							page: 1,
+							limit: 10,
+							fundSourceId: taskId,
+							attachSrc: 'fund_performance_task'
+						},
+						type: 'get',
+						dataType: 'json',
+						success:function(data){
+							if (data.status) {
+								var atr = '<tr style="font-size: 20px;"><td>附件清单</td></tr><tr>'
+									+'<th>附件名称</th><th>附件描述</th></tr>';
+								if(data.data.total == 0){
+									atr += '无数据';
+								}else{
+									mui.each(data.data.list, function(i, item){
+										atr +='<tr><td>'+item.attachmentName+'</td><td>'
+											+item.memo+'</td></tr>';
+									})
+								}
+								fill.innerHTML=atr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","附件信息");
+						}
+					});
+				}else{
+					
+				}
+			});
+		</script>
+	</body>
+
+</html>

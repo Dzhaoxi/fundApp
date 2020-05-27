@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>执行单位</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+		<script src="../../JQuery/jquery-2.0.3.min.js"></script>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">执行项目</h1>
+		</header>
+		<div id="phead" style="margin-top: 3.125rem;">
+			
+		</div>
+		<div>
+			<ul class="mui-table-view" id="pbody">
+				
+			</ul>
+		</div>
+		<script src="../../mui/js/mui.min.js"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			
+			mui.plusReady(function(){
+				//接收上个页面传输过来的信息。
+				var curView = plus.webview.currentWebview();
+				var page = curView.page;
+				var fundAssignId= curView.fundAssignId;
+				
+				mui.ajax(ajaxUrl+'/rest/fund/ProjectWriteController/getTaskTreeManage', {
+					data: {fundAssignId: fundAssignId},
+					type: 'get',
+					success: function(data){
+						if(data.status){
+							var phead = document.getElementById('phead');
+							phead.innerHTML = data.data.lable;
+							if(data.data.children != null){
+								var pli = '<li class="mui-table-view-cell mui-collapse">';
+								mui.each(data.data.children, function(i, item){
+									pli += '<a class="mui-navigate-right" href="#">'+item.lable+'</a>'
+										+'<div class="mui-collapse-content">';
+									if(item.children != null){
+										mui.each(item.children, function(f, item2){
+											pli += '<a onclick="project('+item2.id+')">'
+												+item2.lable+'</a>';
+										});
+									}else{
+										pli += '<p>无数据</p>';
+									}
+									pli += '</div></li>';
+								});
+								mui("#pbody")[0].insertAdjacentHTML('beforeend', pli)
+							}else{
+								var pbody = document.getElementById('pbody');
+								pbody.innerHTML = '<li><p>无数据</p></li>'
+							}
+						}
+					}
+				});
+				
+				function project(cid){
+					mui.openWindow({
+						url: 'task_details.html',
+						id: 'task_details',
+						preload: false,
+						extras: {
+							page: 6;
+							taskid: cid
+						},
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}
+			});
+			
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>分配资金</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">资金详情</h1>
+		</header>
+		<div class="mui-content">
+			<div style="margin: 10px;">
+				<div id="Essential">
+					
+				</div>
+				<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">
+				<table style="font-size: 14px;line-height: 30px;" id="first">
+					
+				</table>
+				<div id="h1"></div>
+				<table style="font-size: 14px;line-height: 30px;" id="second">
+					
+				</table>
+			</div>
+		</div>
+		<script src="../../mui/js/mui.min.js"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			mui.plusReady(function(){
+				//接收上个页面传输过来的信息。
+				var curView = plus.webview.currentWebview();
+				var fundCode = curView.fundCode;
+				var fundBatchNumberName = curView.fundBatchNumberName;
+				var excuteYearName = curView.excuteYearName;
+				var fundName = curView.fundName;
+				var fundTypeName = curView.fundTypeName;
+				var fundSubTypeName = curView.fundSubTypeName;
+				var fundAssignId= curView.fundAssignId;
+				
+				//插入资金基本信息
+				var div1 = '<table style="font-size: 14px;line-height: 30px;"><tr style="font-size: 20px;">'
+					+'<td>基本信息</td></tr><tr><td style="width: 200px">文号：</td>'
+					+'<td id="fundCode">'+fundCode+'</td></tr><tr><td>批次：</td>'
+					+'<td id="fundBatchNumber">'+fundBatchNumberName+'</td></tr><tr><td>批文年度：</td>'
+					+'<td id="excuteYearName">'+excuteYearName+'</td></tr><tr><td>资金名称：</td>'
+					+'<td id="fundName">'+fundName+'</td></tr><tr><td>资金类型：</td>'
+					+'<td id="fundTypeName">'+fundTypeName+'</td></tr><tr><td>资金子类型：</td>'
+					+'<td id="fundSubTypeName">'+fundSubTypeName+'</td></tr></table>';
+				var Essential = document.getElementById('Essential');
+				Essential.innerHTML = div1;
+				//资金块信息
+				var fundBlockTable = document.getElementById('first');
+				mui.ajax(ajaxUrl+'/rest/fund/fundSendManageController/getOrganProAmoutlist', {
+					data: {
+						fundAssignId: fundAssignId,
+						page: 1,
+						limit: 10
+					},
+					dataType:'json',//服务器返回json格式数据
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						if (data.status) {
+							var ftr = '<tr style="font-size: 20px;"><td>资金信息</td></tr>'
+							+'<tr><th style="width: 150px;">资金来源组织名称</th><th>资金属性</th><th style="width: 120px;">资金数额（万元）</th></tr>';
+							mui.each(data.data.list, function(i, item){
+								ftr +='<tr><td>'+item.fundOrganName+'</td><td>'
+									+getfundType(item.fundProperty)+'</td><td>'
+									+item.fundAmount+'</td></tr>';
+							})
+							fundBlockTable.innerHTML = ftr;
+						}
+					},
+					error:function(){
+						mui.alert("数据获取失败！","资金块信息");
+					}
+				});
+				//绩效信息
+				var Performance = document.getElementById('second');
+				mui.ajax(ajaxUrl+'/rest/fund/fundSendManageController/getCityPerformanceByFundAssignId', {
+					data: {
+						fundAssignId: fundAssignId,
+						page: 1,
+						limit: 10
+					},
+					dataType:'json',//服务器返回json格式数据
+					timeout:10000,//超时时间设置为10秒；
+					success:function(data){
+						if (data.status) {
+							var ptr = '<tr style="font-size: 20px;"><td>绩效信息</td></tr>'
+								+'<tr><th>绩效指标名称</th><th style="width:100px;">指标目标值</th><th style="width:70px;">指标单位</th></tr>';
+							mui.each(data.data.list, function(i, item){
+								ptr +='<tr><td>'+item.performanceIndicatorName+'</td><td>'
+									+item.ministryPerformanceValue+'</td><td>'
+									+item.unitName+'</td></tr>';
+							})
+							Performance.innerHTML=ptr;
+						}
+					},
+					error:function(){
+						mui.alert("数据获取失败！","绩效信息");
+					}
+				});
+			});
+		</script>
+	</body>
+
+</html>

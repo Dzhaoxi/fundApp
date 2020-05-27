@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>资金下达详情</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="../../mui/css/style.css" />
+		<style>
+			.se{
+				text-align: right;
+			}
+			.se select{
+				width: 30%;
+				height: 40px;
+			}
+			.mui-table-view{
+				text-align: center;
+				margin-left: -5px;
+				margin-right: -5px;
+				margin-bottom: 5px;
+			}
+			.button_blue{
+				text-align: center;
+			}
+			
+			
+		</style>
+	</head>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">资金下达详情</h1>
+		</header>
+		<!--下拉刷新容器-->
+		<div id="refreshContainer" class="mui-content mui-scroll-wrapper">
+			<div class="mui-scroll">
+				<div class="mui-content" style="margin-top: -10px;">
+					<!-- 筛选框 -->
+					<ul class="mui-table-view" id="sort">
+						<li class="mui-table-view-cell mui-collapse">
+							<a class="mui-navigate-right" href="#">筛选</a>
+							<div class="mui-collapse-content" style="text-align: left;">
+								<p>级别&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;中央&nbsp;&nbsp;&nbsp;省级&nbsp;&nbsp;&nbsp;市级&nbsp;&nbsp;&nbsp;县/区级&nbsp;&nbsp;&nbsp;乡镇</p>
+								<br>
+								<p>年度&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2018年之前&nbsp;&nbsp;&nbsp;2018年&nbsp;&nbsp;&nbsp;2019年&nbsp;&nbsp;&nbsp;2020年</p>
+							</div>
+						</li>
+
+					</ul>
+					<!-- 选项卡 -->
+					<div class="mui-segmented-control">
+						<a class="mui-control-item mui-active" href="#item1" style="letter-spacing: 2px;">已分配</a>
+						<a class="mui-control-item" href="#item2" style="letter-spacing: 2px;">未分配</a>
+					</div>
+					<!-- 图文列表 -->
+					<div class="mui-content-padded">
+						<div id="item1" class="mui-control-content mui-active"></div>
+
+						<div id="item2" class="mui-control-content"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mui-off-canvas-backdrop"></div>
+
+		<script src="../../JQuery/jquery-3.2.0.min.js"></script>
+		<script src="../../mui/js/mui.min.js"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init({
+				pullRefresh: {
+					container: "#refreshContainer", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+					down: {
+						style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+						color: '#2BD009', //可选，默认“#2BD009” 下拉刷新控件颜色
+						height: '50px', //可选,默认50px.下拉刷新控件的高度,
+						range: '100px', //可选 默认100px,控件可下拉拖拽的范围
+						offset: '0px', //可选 默认0px,下拉刷新控件的起始位置
+						auto: true, //可选,默认false.首次加载自动上拉刷新一次
+						callback: pullfresh //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+					}
+				}
+			});
+			//下拉刷新执行函数
+			function pullfresh() {
+				//清空容器
+				mui('#item1')[0].innerHTML = '';
+				mui('#item2')[0].innerHTML = '';
+				fundList();
+			}
+
+			function fundList() {
+				//请求资金列表
+				mui.ajax(ajaxUrl + '/rest/fund/fundReceiveController/getFundAssginManageList', {
+					data: {
+						page: 1,
+						size: 10
+					},
+					type: "GET",
+					timeout: 10000, //超时时间设置为10秒；
+					dataType: 'json', //服务器返回json格式数据
+					success: function(res) {
+						if (res.status) {
+							//var json = JSON.parse(res.data.list); //获取的json数据
+							mui.each(res.data.list, function(index, item) {
+								if (item.assignState == 3) { //0、未下达1、未操作2、接收3、下达4、报备5、资金追加
+									//定义列表循环样式
+									var ul1 = '<ul class="mui-table-view"><li class="mui-table-view-cell mui-media" >' +
+										'<div class="mui-media-body"><p><p style="float: right; padding-top: 5px;" name="批文年度">' +
+										item.excuteYearName + '年</p><h4 name="资金名称" >' + item.fundName +
+										'</h4></p><p style="margin-top: 20px;"><a style="float: right;" onclick="details(\'' +
+										item.fundCode + '\',\'' + item.fundBatchNumberName + '\',\'' + item.excuteYearName + '\',\'' + item.fundName +
+										'\',\'' + item.fundTypeName + '\',\'' + item.fundSubTypeName + '\',\'' + item.fundCapital + '\',' + item.fundAssignId +
+										')">详情&nbsp; ></a><table style="width: 85%;margin-left: 10px;">' +
+										'<tr style="text-align: left; font-size: 14px;color:#7d7d7d">' +
+										'<td name="下发单位" >' + item.organName +
+										'</td><td name="资金下达数（万元）" >' + item.fundCapital +
+										'（万元）</td><td name="文号">' + item.fundCode +
+										'</td></tr></table></p><br />' +
+										'<button type="button" class="button_blue" onclick=rescind(' + item.fundAssignId + ')>撤回</button></div>' +
+										'</li></ul>';
+									mui('#item1')[0].insertAdjacentHTML('beforeend', ul1); //'beforeend'表示插入元素内的最后一个子节点之后
+								}else if(item.assignState == 2){
+									var ul2 = '<ul class="mui-table-view"><li class="mui-table-view-cell mui-media" >' +
+										'<div class="mui-media-body"><p><p style="float: right; padding-top: 5px;" name="批文年度">' +
+										item.excuteYearName + '年</p><h4 name="资金名称" >' + item.fundName +
+										'</h4></p><p style="margin-top: 20px;"><a style="float: right;" onclick="details(\'' +
+										item.fundCode + '\',\'' + item.fundBatchNumberName + '\',\'' + item.excuteYearName + '\',\'' + item.fundName +
+										'\',\'' + item.fundTypeName + '\',\'' + item.fundSubTypeName + '\',\'' + item.fundCapital + '\',' + item.fundAssignId +
+										')">详情&nbsp; ></a><table style="width: 85%;margin-left: 10px;">' +
+										'<tr style="text-align: left; font-size: 14px;color:#7d7d7d">' +
+										'<td name="下发单位" >' + item.organName +
+										'</td><td name="资金下达数（万元）" >' + item.fundCapital +
+										'（万元）</td><td name="文号">' + item.fundCode +
+										'</td></tr></table></p></li></ul>';
+									mui('#item2')[0].insertAdjacentHTML('beforeend', ul2);
+								}
+							})
+						}
+					},
+					error: function(err) { // 请求失败处理函数
+						mui.alert("数据获取失败！");
+					}
+				});
+				mui('#refreshContainer').pullRefresh().endPulldown(); //刷新结束
+			}
+
+			//撤回
+			function rescind(fundAssignId) {
+				mui.ajax(ajaxUrl + '/rest/fund/fundSendManageController/rescind', {
+					data: {
+						fundAssignId: fundAssignId
+					},
+					type: "get",
+					timeout: 10000, //超时时间设置为10秒；
+					success: function(data) {
+						if (data.status) {
+							mui.alert('撤回成功', '资金下达详情');
+							pullfresh();
+						} else {
+							mui.alert(data.msg);
+						}
+					},
+					error: function(err) { // 请求失败处理函数
+						mui.alert(err.msg);
+						pullfresh();
+					}
+				})
+			}
+
+			//详情按钮，详情页面跳转
+			function details(fundCode, fundBatchNumberName, excuteYearName, fundName,
+				fundTypeName, fundSubTypeName, fundCapital, fundAssignId) {
+				mui.openWindow({
+					url: "../details/details.html",
+					id: "details",
+					preload: false,
+					extras: { //将本页面数据传输到下一页面
+						page: 2,
+						fundCode: fundCode,
+						fundBatchNumberName: fundBatchNumberName,
+						excuteYearName: excuteYearName,
+						fundName: fundName,
+						fundTypeName: fundTypeName,
+						fundSubTypeName: fundSubTypeName,
+						fundCapital: fundCapital,
+						fundAssignId: fundAssignId
+					},
+					show: {
+						aniShow: 'pop-in'
+					},
+					waiting: {
+						autoShow: false
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

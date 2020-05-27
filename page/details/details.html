@@ -1,0 +1,288 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>资金详情</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			table{
+				margin-bottom: 5px;
+			}
+			#first{
+				text-align: left;
+			}
+			#second{
+				text-align: left;
+			}
+			#third{
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">资金详情</h1>
+		</header>
+		<div class="mui-content">
+			<div style="margin: 10px;">
+				<div id="Essential">
+					
+				</div>
+				<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">
+				<table style="font-size: 14px;line-height: 30px;" id="first">
+					
+				</table>
+				<div id="h1"></div>
+				<div id="dils"></div>
+				<table style="font-size: 14px;line-height: 30px;" id="second">
+					
+				</table>
+				<div id="h2"></div>
+				<table style="font-size: 14px;line-height: 30px;" id="third">
+					
+				</table>
+			</div>
+		</div>
+		<script src="../../JQuery/jquery-3.2.0.min.js"></script>
+		<script src="../../mui/js/mui.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init();
+
+			mui.plusReady(function(){
+				//接收上个页面传输过来的信息。
+				var curView = plus.webview.currentWebview();
+				var page = curView.page;	//详情页面判断，1为资金接收，2为资金下达，3为资金审核，4为执行管理
+				var fundCode = curView.fundCode;
+				var fundBatchNumberName = curView.fundBatchNumberName;
+				var excuteYearName = curView.excuteYearName;
+				var fundName = curView.fundName;
+				var fundTypeName = curView.fundTypeName;
+				var fundSubTypeName = curView.fundSubTypeName;
+				var fundCapital = curView.fundCapital;
+				var fundAssignId= curView.fundAssignId;
+				
+				//插入资金基本信息
+				var div1 = '<table style="font-size: 14px;line-height: 30px;"><tr style="font-size: 20px;">'
+					+'<td>基本信息</td></tr><tr><td style="width: 200px">文号：</td>'
+					+'<td id="fundCode">'+fundCode+'</td></tr><tr><td>批次：</td>'
+					+'<td id="fundBatchNumber">'+fundBatchNumberName+'</td></tr><tr><td>批文年度：</td>'
+					+'<td id="excuteYearName">'+excuteYearName+'</td></tr><tr><td>资金名称：</td>'
+					+'<td id="fundName">'+fundName+'</td></tr><tr><td>资金类型：</td>'
+					+'<td id="fundTypeName">'+fundTypeName+'</td></tr><tr><td>资金子类型：</td>'
+					+'<td id="fundSubTypeName">'+fundSubTypeName+'</td></tr><tr><td>其中中央资金（万元）：</td>'
+					+'<td id="fundCapital">'+fundCapital+'</td></tr></table>';
+				var Essential = document.getElementById('Essential');
+				Essential.innerHTML = div1;
+				
+				//准备横线
+				var hr = '<hr style="height:1px;border:none;border-top:1px solid #C5C5C5; ">';
+				var h1 = document.getElementById('h1');
+				var h2 = document.getElementById('h2');
+				
+				//详情页面判断，1为资金接收，2为资金下达
+				if(page == 1){
+					h1.innerHTML = hr;
+					h2.innerHTML = hr;
+					//定义表格信息
+					var fundBlockTable = document.getElementById('first');//资金块信息
+					var Performance = document.getElementById('second');//绩效信息
+					var fill = document.getElementById('third');	//附件信息
+					//插入资金块信息
+					mui.ajax(ajaxUrl+'/rest/fund/fundReportController/getAssignDetailByAssign',{
+						data:{
+							fundAssignId: fundAssignId
+						},
+						dataType:'json',//服务器返回json格式数据
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							if (data.status) {
+								var ftr = '<tr style="font-size: 20px;"><td>资金信息</td></tr>'
+								+'<tr><th style="width: 150px;">资金来源组织名称</th><th>资金属性</th><th style="width: 120px;">资金数额（万元）</th></tr>';
+								mui.each(data.data.list, function(i, item){
+									ftr +='<tr><td>'+item.fundOrganName+'</td><td>'
+										+getfundType(item.fundProperty)+'</td><td>'
+										+item.fundAmount+'</td></tr>';
+								})
+								fundBlockTable.innerHTML = ftr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","资金块信息");
+						}
+					});
+					
+					//插入绩效信息
+					mui.ajax(ajaxUrl + '/rest/fund/fundReceiveController/getPerformanceIndicatorList',{
+						data:{
+							page: 1,
+							size: 10,
+							fundAssignId: fundAssignId
+						},
+						dataType:'json',//服务器返回json格式数据
+						type:'get',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							if (data.status) {
+								var ptr = '<tr style="font-size: 20px;"><td>绩效信息</td></tr>'
+									+'<tr><th>绩效指标名称</th><th style="width:100px;">指标目标值</th><th style="width:70px;">指标单位</th></tr>';
+								mui.each(data.data.list, function(i, item){
+									ptr +='<tr><td>'+item.performanceIndicatorName+'</td><td>'
+										+item.ministryPerformanceValue+'</td><td>'
+										+item.unitName+'</td></tr>';
+								})
+								Performance.innerHTML=ptr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","绩效信息");
+						}
+					});
+					
+					//插入附件信息
+					mui.ajax(ajaxUrl+'/rest/fund/fundFileController/getFundFileList',{
+						data:{
+							page: 1,
+							size: 10,
+							fundSourceCode: fundCode,
+							attachSrc:"fund_source",
+							attachSrc1:"fund_assign",
+							fundAssignId: fundAssignId,
+							srcTypeId: 3
+						},
+						dataType:'json',//服务器返回json格式数据
+						type:'get',//HTTP请求类型
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							if (data.status) {
+								var atr = '<tr style="font-size: 20px;"><td>附件清单</td></tr><tr>'
+									+'<th>附件名称</th><th>附件描述</th></tr>';
+								if(data.data.total == 0){
+									atr += '无数据';
+								}else{
+									mui.each(data.data.list, function(i, item){
+										atr +='<tr><td>'+item.attachmentName+'</td><td>'
+											+item.memo+'</td></tr>';
+									})
+								}
+								fill.innerHTML=atr;
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","附件信息");
+						}
+					});
+				}else{	//资金下达详情页面
+					var allfund = document.getElementById('first');
+					//插入总体信息
+					mui.ajax(ajaxUrl + '/rest/fund/fundSendManageController/getCountByParentId', {
+						data: {
+							parentId: fundAssignId
+						},
+						type: 'get',
+						dataType: "json",
+						success:function(data){
+							if (data.status) {
+								var num = data.data.countNum;
+								var amount = data.data.fundAmount;
+								if(amount == null || amount == ''){
+									allfund.innerHTML='<tr><td><b>已分配'
+											+num+'个单位，累计0万元</b></td></tr>';
+								}else{
+									allfund.innerHTML='<tr><td><b>已分配'
+										+num+'个单位，累计'
+										+amount+'万元</b></td></tr>'
+										+'<tr style="font-size: 20px;"><td>分配信息</td></tr>';
+								}
+								
+							}
+						}
+					})
+					//插入资金分配信息
+					mui.ajax(ajaxUrl + '/rest/fund/fundSendManageController/getAssignByParentId', {
+						data: {
+							page: 1,
+							limit: 10,
+							parentId: fundAssignId
+						},
+						dataType:'json',//服务器返回json格式数据
+						timeout:10000,//超时时间设置为10秒；
+						success:function(data){
+							if (data.status) {
+								mui.each(data.data.list, function(i, item){
+									var assign = '<table style="font-size: 14px;line-height: 30px;">'
+										+'<tr><th style="width:200px;">下发单位</th><td>'+item.organName+'</td></tr>'
+										+'<tr><th>资金名称</th><td>'+item.fundName+'</td></tr>'
+										+'<tr><th>中央财政资金下达数（万元）</th><td>'+item.fundCapital+'</td></tr>'
+										+'<tr><th>指标数</th><td>'+item.countNum+'</td></tr>'
+										+'<tr><td colspan = "2" style="text-align: center;">'
+										+'<a onclick="fundDils(\''+item.fundName+'\','+item.fundAssignId
+										+')">查看详情</a></td></tr></table>';
+									mui('#dils')[0].insertAdjacentHTML('beforeend', assign);
+								})
+							}
+						},
+						error:function(){
+							mui.alert("数据获取失败！","资金分配信息");
+						}
+					});
+					
+				}
+				//查看资金分配按钮
+				function fundDils(name, assignId){
+					mui.openWindow({
+						url: 'fund_details.html',
+						id: 'fund_details',
+						preload: false,
+						extras: {//将本页面数据传输到下一页面
+							fundAssignId: assignId,
+							fundName: name,
+							fundCode: fundCode,
+							fundBatchNumberName: fundBatchNumberName,
+							excuteYearName: excuteYearName,
+							fundTypeName: fundTypeName,
+							fundSubTypeName: fundSubTypeName
+						},
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}
+				
+				//返回刷新
+				/* mui.back = function() {
+					var wobj = plus.webview.getWebviewById(page);//注意page是原html的ID
+					wobj.reload(true);
+					mui.back;
+				}; */
+			}); 
+			//将资金块信息中的fundProperty级别换为对应名称
+			function getfundType(num) {
+				switch(num) {
+					case 1:
+						return "专项资金"
+						break;
+					case 2:
+						return "地方财政"
+						break;
+					case 3:
+						return "地方统筹的其他资金"
+						break;
+					case 4:
+						return "责任人出资"
+						break;
+					case 5:
+						return "社会资金"
+						break;
+				}
+			}
+		</script>
+	</body>
+
+</html>

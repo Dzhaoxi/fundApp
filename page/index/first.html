@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>首页</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="../../mui/css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			font:"宋体";
+			#receiveNum{
+				margin-left: -25px;
+			}
+			#reportNum{
+				margin-left: -25px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<!-- 主界面不动、菜单移动 -->
+		<!-- 侧滑导航根容器 -->
+		<div class="mui-off-canvas-wrap mui-draggable mui-slide-in">
+		  <!-- 菜单容器 -->
+		 
+		  <!-- 主页面容器 -->
+		  <div class="mui-inner-wrap">
+			<!-- 主页面标题 -->
+			<header class="mui-bar mui-bar-nav">
+			  <h1 class="mui-title">首页</h1>
+			</header>
+		
+			<div class="mui-content mui-scroll-wrapper">
+			  <div class="mui-scroll">
+				<!-- 主界面具体展示内容 -->
+				<div id="slider" class="mui-slider" >
+				  <div class="mui-slider-group mui-slider-loop">
+					<!-- 额外增加的一个节点(循环轮播：第一个节点是最后一张轮播) -->
+					<div class="mui-slider-item mui-slider-item-duplicate">
+					  <a href="#">
+						<img src="../../images/index.png">
+					  </a>
+					</div>
+					<!-- 第一张 -->
+					<div class="mui-slider-item">
+					  <a href="#">
+						<img src="../../images/index.png">
+					  </a>
+					</div>
+					<!-- 第二张 -->
+					<div class="mui-slider-item">
+					  <a href="#">
+						<img src="http:\">
+					  </a>
+					</div>
+					<!-- 第三张 -->
+					<div class="mui-slider-item">
+					  <a href="#">
+						<img src="http:\">
+					  </a>
+					</div>
+					<!-- 额外增加的一个节点(循环轮播：最后一个节点是第一张轮播) -->
+					<div class="mui-slider-item mui-slider-item-duplicate">
+					  <a href="#">
+						<img src="../../images/index.png">
+					  </a>
+					</div>
+				  </div>
+				  <div class="mui-slider-indicator">
+					<div class="mui-indicator mui-active"></div>
+					<div class="mui-indicator"></div>
+					<div class="mui-indicator"></div>
+					<div class="mui-indicator"></div>
+				  </div>
+				</div>
+				
+				<ul class="mui-table-view mui-grid-view mui-grid-9" style="text-align: center;">
+					<li class="mui-table-view-cell mui-media mui-col-xs-6 mui-col-sm-6">
+						<a id="receive">
+							<img src="../../images/img1.png" />
+							<span class="mui-badge mui-badge-red" id="receiveNum"></span>
+							<div class="mui-media-body">资金接收</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-6 mui-col-sm-6">
+						<a id="send" >
+							<img src="../../images/img2.png" />
+							<div class="mui-media-body">资金下达详情</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-6 mui-col-sm-6">
+						<a id="audit">
+							<img src="../../images/img3.png" />
+							<span class="mui-badge mui-badge-red" id="reportNum"></span>
+							<div class="mui-media-body">资金审核</div>
+						</a>
+					</li>
+					<li class="mui-table-view-cell mui-media mui-col-xs-6 mui-col-sm-6">
+						<a id="exec">
+							<img src="../../images/img4.png" />
+							<div class="mui-media-body">执行管理</div>
+						</a>
+					</li>
+				</ul>
+				
+				
+			  </div>
+			</div>  
+			<div class="mui-off-canvas-backdrop"></div>
+		  </div>
+		</div>
+		<script src="../../JQuery/jquery-3.2.0.min.js"></script>
+		<script src="../../mui/js/mui.min.js"></script>
+		<script src="../../function.js"></script>
+		<script type="text/javascript">
+			mui.init();
+			
+			//待接收资金数量
+			mui.ajax(ajaxUrl + '/rest/fund/fundReceiveController/toBeAcceptedFunds', {
+				timeout: 10000, //超时时间设置为10秒；
+				success : function(data) {
+					if(data != 0){
+						mui('#receiveNum')[0].insertAdjacentHTML('beforeend', data);
+					}
+				}
+			});
+			//待审核资金数量
+			mui.ajax(ajaxUrl + '/rest/fund/fundReceiveController/toBeCheckedFunds', {
+				timeout: 10000, //超时时间设置为10秒；
+				success : function(data) {
+					if(data != 0){
+						mui('#reportNum')[0].insertAdjacentHTML('beforeend', data);
+					}
+				}
+			});
+			
+			mui.plusReady(function(){
+				//定义按钮
+				var receiveButton = document.getElementById('receive');
+				var sendButton = document.getElementById('send');
+				var auditButton = document.getElementById('audit');
+				var execButton = document.getElementById('exec');
+				//资金接收页面跳转
+				receiveButton.addEventListener('tap', function(event) {
+					mui.openWindow({
+						url: '../first/fund_receive.html',
+						id: 1,
+						preload: true,
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}, false);
+				//资金下达详情跳转
+				sendButton.addEventListener('tap', function(event) {
+					mui.openWindow({
+						url: "../first/fund_send.html",
+						id: 2,
+						preload: true,
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}, false);
+				//资金审核跳转
+				auditButton.addEventListener('tap', function(event) {
+					mui.openWindow({
+						url: '../first/fund_audit.html',
+						id: 3,
+						preload: true,
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}, false);
+				//执行管理跳转
+				execButton.addEventListener('tap', function(event) {
+					mui.openWindow({
+						url: '../first/task_exec.html',
+						id: 4,
+						preload: true,
+						show: {
+							aniShow: 'pop-in'
+						},
+						waiting: {
+							autoShow: false
+						}
+					});
+				}, false);
+			});
+		</script>
+	</body>
+
+</html>
